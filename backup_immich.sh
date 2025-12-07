@@ -21,7 +21,7 @@ DATE=$(date +%Y-%m-%d_%H-%M-%S)
 FILENAME="immich_backup_${DATE}.tar.gz"
 
 # ILE KOPII TRZYMAĆ? (Ustawienie rotacji)
-LICZBA_KOPII=3
+LICZBA_KOPII=1
 
 # ==========================================
 # CZĘŚĆ WYKONAWCZA
@@ -44,7 +44,7 @@ fi
 
 # 2. Pakowanie wszystkiego do jednego pliku
 echo "[INFO] Tworzenie archiwum..."
-tar -czf "$BACKUP_DIR/$FILENAME" \
+tar -czvf "$BACKUP_DIR/$FILENAME" \
     -C "$TEMP_DIR" immich-database.sql.gz \
     -C "$IMMICH_UPLOAD_DIR" .
 
