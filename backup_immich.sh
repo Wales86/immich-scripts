@@ -23,6 +23,22 @@ FILENAME="immich_backup_${DATE}.tar.gz"
 # ILE KOPII TRZYMAĆ? (Ustawienie rotacji)
 LICZBA_KOPII=1
 
+# Konfiguracja powiadomień email przez Mailgun (opcjonalne)
+EMAIL_ENABLED=false
+EMAIL_TO="$EMAIL_TO_DEFAULT"
+EMAIL_SUBJECT="Backup Immich zakończony"
+
+# Ładowanie konfiguracji Mailgun
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_FILE="${SCRIPT_DIR}/mailgun_config.sh"
+
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+else
+    echo "[UWAGA] Brak pliku konfiguracyjnego $CONFIG_FILE - email nie będzie działać"
+    EMAIL_ENABLED=false
+fi
+
 # ==========================================
 # CZĘŚĆ WYKONAWCZA
 # ==========================================
@@ -65,3 +81,22 @@ echo "[INFO] Sprawdzanie starych kopii (zachowujemy $LICZBA_KOPII najnowszych)..
 ls -tp "$BACKUP_DIR"/immich_backup_*.tar.gz | grep -v '/$' | tail -n +$((LICZBA_KOPII + 1)) | xargs -I {} rm -- "$BACKUP_DIR/{}"
 
 echo "[INFO] Zakończono."
+
+# 5. Wysyłanie powiadomienia email (jeśli włączone)
+if [ "$EMAIL_ENABLED" = true ]; then
+    echo "[INFO] Wysyłanie powiadomienia email przez Mailgun..."
+    EMAIL_BODY="Backup Immich zakończony pomyślnie.
+Data: $DATE
+Plik: $BACKUP_DIR/$FILENAME
+Rozmiar: $(du -h "$BACKUP_DIR/$FILENAME" | cut -f1)
+Serwer: $(hostname)"
+
+    RESPONSE=$(send_mailgun_email "$EMAIL_TO" "$EMAIL_SUBJECT" "$EMAIL_BODY")
+
+    if echo "$RESPONSE" | grep -q '"id":'; then
+        echo "[OK] Email wysłany pomyślnie."
+    else
+        echo "[UWAGA] Nie udało się wysłać emaila."
+        echo "Response: $RESPONSE"
+    fi
+fi
