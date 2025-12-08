@@ -24,7 +24,7 @@ FILENAME="immich_backup_${DATE}.tar.gz"
 LICZBA_KOPII=1
 
 # Konfiguracja powiadomień email przez Mailgun (opcjonalne)
-EMAIL_ENABLED=false
+EMAIL_ENABLED=true
 EMAIL_TO="$EMAIL_TO_DEFAULT"
 EMAIL_SUBJECT="Backup Immich zakończony"
 
